@@ -1,112 +1,118 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { Collapsible } from '@/components/ui/collapsible';
-import { ExternalLink } from '@/components/external-link';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Fonts } from '@/constants/theme';
+import React from 'react';
+import { Alert, FlatList, Linking, Pressable, StyleSheet, View } from 'react-native';
 
-export default function TabTwoScreen() {
+type Contact = {
+  id: string;
+  name: string;
+  role?: string;
+  phone?: string;
+  note?: string;
+};
+
+const CONTACTS: Contact[] = [
+  { id: '1', name: 'PC Convoi', role: "Permanence", phone: '+33123456789', note: 'Contact principal' },
+  { id: '2', name: 'Chef d’escorte', role: 'Jean Dupont', phone: '+33601020304' },
+  { id: '3', name: 'Gendarmerie locale', phone: '17', note: 'Urgence' },
+  { id: '4', name: 'Service voirie', phone: '+33555112233' },
+  { id: '5', name: 'SNCF Passage à niveau', phone: '0800123123' },
+];
+
+export default function ContactsScreen() {
+  const callNumber = (phone?: string) => {
+    if (!phone) {
+      Alert.alert('Numéro manquant', 'Aucun numéro de téléphone disponible pour ce contact.');
+      return;
+    }
+    const url = `tel:${phone}`;
+    Linking.openURL(url);
+  };
+
+  const renderItem = ({ item }: { item: Contact }) => (
+    <ThemedView style={styles.card}>
+      <View style={{ flex: 1 }}>
+        <ThemedText type="subtitle">{item.name}</ThemedText>
+        {item.role ? <ThemedText style={styles.role}>{item.role}</ThemedText> : null}
+        {item.note ? <ThemedText style={styles.note}>{item.note}</ThemedText> : null}
+        {item.phone ? (
+          <ThemedText style={styles.phone}>{item.phone}</ThemedText>
+        ) : (
+          <ThemedText style={styles.noPhone}>Aucun numéro</ThemedText>
+        )}
+      </View>
+      <Pressable
+        style={[styles.actionBtn, !item.phone ? styles.actionDisabled : styles.actionPrimary]}
+        onPress={() => callNumber(item.phone)}
+        disabled={!item.phone}
+      >
+        <ThemedText type="defaultSemiBold" style={{ color: 'white' }}>Appeler</ThemedText>
+      </Pressable>
+    </ThemedView>
+  );
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText
-          type="title"
-          style={{
-            fontFamily: Fonts.rounded,
-          }}>
-          Explore
-        </ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image
-          source={require('@/assets/images/react-logo.png')}
-          style={{ width: 100, height: 100, alignSelf: 'center' }}
-        />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user&apos;s current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful{' '}
-          <ThemedText type="defaultSemiBold" style={{ fontFamily: Fonts.mono }}>
-            react-native-reanimated
-          </ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+    <ThemedView style={{ flex: 1 }}>
+      <FlatList
+        data={CONTACTS}
+        keyExtractor={(c) => c.id}
+        contentContainerStyle={styles.list}
+        renderItem={renderItem}
+        ListEmptyComponent={
+          <ThemedText style={{ textAlign: 'center', marginTop: 24 }}>Aucun contact disponible.</ThemedText>
+        }
+      />
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
-  },
-  titleContainer: {
-    flexDirection: 'row',
+  list: {
+    padding: 12,
     gap: 8,
+  },
+  card: {
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#999',
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 8,
+    backgroundColor: 'rgba(0,0,0,0.02)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  role: {
+    marginTop: 2,
+    color: '#555',
+  },
+  note: {
+    marginTop: 2,
+    color: '#777',
+    fontSize: 12,
+  },
+  phone: {
+    marginTop: 6,
+    fontSize: 12,
+    color: '#444',
+  },
+  noPhone: {
+    marginTop: 6,
+    fontSize: 12,
+    color: '#888',
+    fontStyle: 'italic',
+  },
+  actionBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 8,
+    minWidth: 90,
+    alignItems: 'center',
+  },
+  actionPrimary: {
+    backgroundColor: '#28a745',
+  },
+  actionDisabled: {
+    backgroundColor: '#c2c2c2',
   },
 });

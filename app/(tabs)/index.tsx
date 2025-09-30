@@ -1,98 +1,156 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { Obstacle, ObstaclesStore } from '@/services/obstacles';
+import { useFocusEffect } from '@react-navigation/native';
 import { Link } from 'expo-router';
+import React, { useCallback, useState } from 'react';
+import { Alert, FlatList, Linking, Pressable, StyleSheet, View } from 'react-native';
 
-export default function HomeScreen() {
+export default function ObstaclesScreen() {
+  const [data, setData] = useState<Obstacle[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const list = await ObstaclesStore.getAll();
+      setData(list);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      load();
+      return () => {};
+    }, [load])
+  );
+
+  const confirmDelete = (id: string) => {
+    Alert.alert('Supprimer', 'Confirmer la suppression de cet obstacle ?', [
+      { text: 'Annuler', style: 'cancel' },
+      {
+        text: 'Supprimer',
+        style: 'destructive',
+        onPress: async () => {
+          await ObstaclesStore.remove(id);
+          load();
+        },
+      },
+    ]);
+  };
+
+  const openMap = (o: Obstacle) => {
+    if (o.latitude == null || o.longitude == null) {
+      Alert.alert('Coordonnées manquantes', "Ajoutez latitude et longitude pour l'afficher sur la carte.");
+      return;
+    }
+    const url = `https://www.google.com/maps?q=${o.latitude},${o.longitude}`;
+    Linking.openURL(url);
+  };
+
+  const renderItem = ({ item }: { item: Obstacle }) => (
+    <ThemedView style={styles.card}>
+      <View style={{ flex: 1 }}>
+        <ThemedText type="subtitle">{item.title}</ThemedText>
+        {item.description ? (
+          <ThemedText numberOfLines={2} style={styles.desc}>{item.description}</ThemedText>
+        ) : null}
+        <ThemedText style={styles.coords}>
+          {item.latitude != null && item.longitude != null
+            ? `Lat: ${item.latitude.toFixed(6)} | Lon: ${item.longitude.toFixed(6)}`
+            : 'Coordonnées non définies'}
+        </ThemedText>
+      </View>
+      <View style={styles.actions}>
+        <Pressable style={[styles.actionBtn, styles.ghost]} onPress={() => openMap(item)}>
+          <ThemedText type="defaultSemiBold">Carte</ThemedText>
+        </Pressable>
+        <Pressable style={[styles.actionBtn, styles.danger]} onPress={() => confirmDelete(item.id)}>
+          <ThemedText type="defaultSemiBold" style={{ color: 'white' }}>Supprimer</ThemedText>
+        </Pressable>
+      </View>
+    </ThemedView>
+  );
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
-
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <ThemedView style={{ flex: 1 }}>
+      <FlatList
+        contentContainerStyle={styles.list}
+        data={data}
+        keyExtractor={(item) => item.id}
+        renderItem={renderItem}
+        ListEmptyComponent={
+          <ThemedText style={{ textAlign: 'center', marginTop: 24 }}>
+            {loading ? 'Chargement...' : 'Aucun obstacle. Ajoutez-en un avec le bouton +'}
+          </ThemedText>
+        }
+      />
+      <Link href="/add-obstacle" asChild>
+        <Pressable style={styles.fab} accessibilityLabel="Ajouter un obstacle">
+          <ThemedText type="title" style={{ color: 'white' }}>+</ThemedText>
+        </Pressable>
+      </Link>
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  list: {
+    padding: 12,
     gap: 8,
   },
-  stepContainer: {
-    gap: 8,
+  card: {
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#999',
+    borderRadius: 10,
+    padding: 12,
     marginBottom: 8,
+    backgroundColor: 'rgba(0,0,0,0.02)',
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
+  desc: {
+    marginTop: 4,
+  },
+  coords: {
+    marginTop: 6,
+    fontSize: 12,
+    color: '#666',
+  },
+  actions: {
+    gap: 8,
+    alignItems: 'flex-end',
+  },
+  actionBtn: {
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  danger: {
+    backgroundColor: '#d9534f',
+  },
+  ghost: {
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#999',
+    backgroundColor: 'transparent',
+  },
+  fab: {
     position: 'absolute',
+    right: 16,
+    bottom: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#007AFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 3,
   },
 });
