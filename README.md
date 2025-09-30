@@ -62,7 +62,7 @@ npm install
 2. Démarrer en développement:
 
 ```bash
-npx expo start
+npx expo start --tunnel
 ```
 
 3. Ouvrir sur:
@@ -117,7 +117,7 @@ git branch -M main
 Créer un dépôt distant (GitHub, GitLab, etc.), puis l’ajouter:
 
 ```bash
-git remote add origin https://github.com/VOTRE_COMPTE/ConvoiSentinel.git
+git remote add origin https://github.com/Ishak-rav/ConvoiSentinel.git
 git push -u origin main
 ```
 
