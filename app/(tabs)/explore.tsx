@@ -52,7 +52,7 @@ export default function ContactsScreen() {
   );
 
   return (
-    <ThemedView style={{ flex: 1 }}>
+    <ThemedView style={{ marginTop: 40, flex: 1 }}>
       <FlatList
         data={CONTACTS}
         keyExtractor={(c) => c.id}
