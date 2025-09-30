@@ -1,5 +1,6 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { useThemeColor } from '@/hooks/use-theme-color';
 import { Obstacle, ObstaclesStore } from '@/services/obstacles';
 import { useFocusEffect } from '@react-navigation/native';
 import { Link } from 'expo-router';
@@ -9,6 +10,7 @@ import { Alert, FlatList, Linking, Pressable, StyleSheet, View } from 'react-nat
 export default function ObstaclesScreen() {
   const [data, setData] = useState<Obstacle[]>([]);
   const [loading, setLoading] = useState(false);
+  const tint = useThemeColor({}, 'tint');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -76,7 +78,17 @@ export default function ObstaclesScreen() {
 
   return (
     <ThemedView style={{ flex: 1 }}>
-      <View style={{ marginTop: 40, flex: 1 }}>
+      <View style={{ marginTop: 40, flex: 1 }}>Dans la fenêtre ajouter un obstacle les boutons "Utiliser ma position" et "Prendre une photo" sont t
+        <View style={{ alignItems: 'flex-end', paddingHorizontal: 12, marginBottom: 8 }}>
+          <Link href="/modal" asChild>
+            <Pressable
+              style={{ paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, borderWidth: StyleSheet.hairlineWidth, borderColor: '#999' }}
+              accessibilityLabel="Changer d'apparence"
+            >
+              <ThemedText type="defaultSemiBold">Apparence</ThemedText>
+            </Pressable>
+          </Link>
+        </View>
         <FlatList
           contentContainerStyle={styles.list}
           data={data}

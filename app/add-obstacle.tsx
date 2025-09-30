@@ -1,10 +1,10 @@
 import { ThemedText } from '@/components/themed-text';
+import { useThemeColor } from '@/hooks/use-theme-color';
 import { ObstaclesStore } from '@/services/obstacles';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { useThemeColor } from '@/hooks/use-theme-color';
 import { Alert, Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 
 export default function AddObstacleScreen() {
@@ -145,10 +145,10 @@ export default function AddObstacleScreen() {
         </View>
 
         <View style={styles.actions}>
-          <Pressable style={[styles.button, styles.secondary]} onPress={getGPS}>
+          <Pressable style={[styles.button, styles.alternate]} onPress={getGPS}>
             <ThemedText type="defaultSemiBold">Utiliser ma position</ThemedText>
           </Pressable>
-          <Pressable style={[styles.button, styles.secondary]} onPress={takePhoto}>
+          <Pressable style={[styles.button, styles.alternate]} onPress={takePhoto}>
             <ThemedText type="defaultSemiBold">Prendre une photo</ThemedText>
           </Pressable>
         </View>
@@ -212,6 +212,9 @@ const styles = StyleSheet.create({
   },
   secondary: {
     backgroundColor: '#E6E6E6',
+  },
+  alternate: {
+    backgroundColor: '#797d7eff',
   },
   ghost: {
     borderWidth: StyleSheet.hairlineWidth,
