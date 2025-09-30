@@ -4,6 +4,7 @@ import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
+import { useThemeColor } from '@/hooks/use-theme-color';
 import { Alert, Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 
 export default function AddObstacleScreen() {
@@ -15,6 +16,11 @@ export default function AddObstacleScreen() {
   const [longitude, setLongitude] = useState<string>('');
   const [photoUri, setPhotoUri] = useState<string | undefined>(undefined);
   const [saving, setSaving] = useState(false);
+
+  // Couleurs thème (texte, placeholder, accent bleu marine)
+  const textColor = useThemeColor({}, 'text');
+  const placeholderColor = useThemeColor({}, 'icon');
+  const tint = useThemeColor({}, 'tint');
 
   const getGPS = async () => {
     try {
@@ -99,8 +105,8 @@ export default function AddObstacleScreen() {
           value={title}
           onChangeText={setTitle}
           placeholder="Ex: Feu tricolore à démonter"
-          style={styles.input}
-          placeholderTextColor="#999"
+          style={[styles.input, { color: textColor }]}
+          placeholderTextColor={placeholderColor}
         />
 
         <ThemedText type="defaultSemiBold" style={{ marginTop: 12 }}>Description</ThemedText>
@@ -108,8 +114,8 @@ export default function AddObstacleScreen() {
           value={description}
           onChangeText={setDescription}
           placeholder="Détails utiles..."
-          style={[styles.input, styles.multiline]}
-          placeholderTextColor="#999"
+          style={[styles.input, styles.multiline, { color: textColor }]}
+          placeholderTextColor={placeholderColor}
           multiline
         />
 
@@ -121,8 +127,8 @@ export default function AddObstacleScreen() {
               onChangeText={setLatitude}
               placeholder="48.8566"
               keyboardType="decimal-pad"
-              style={styles.input}
-              placeholderTextColor="#999"
+              style={[styles.input, { color: textColor }]}
+              placeholderTextColor={placeholderColor}
             />
           </View>
           <View style={{ flex: 1, marginLeft: 8 }}>
@@ -132,8 +138,8 @@ export default function AddObstacleScreen() {
               onChangeText={setLongitude}
               placeholder="2.3522"
               keyboardType="decimal-pad"
-              style={styles.input}
-              placeholderTextColor="#999"
+              style={[styles.input, { color: textColor }]}
+              placeholderTextColor={placeholderColor}
             />
           </View>
         </View>
@@ -151,7 +157,7 @@ export default function AddObstacleScreen() {
           <Image source={{ uri: photoUri }} style={styles.photo} />
         ) : null}
 
-        <Pressable style={[styles.button, styles.primary]} onPress={onSave} disabled={saving}>
+        <Pressable style={[styles.button, styles.primary, { backgroundColor: tint }]} onPress={onSave} disabled={saving}>
           <ThemedText type="defaultSemiBold" style={{ color: 'white' }}>
             {saving ? 'Enregistrement...' : 'Enregistrer'}
           </ThemedText>
@@ -202,7 +208,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   primary: {
-    backgroundColor: '#007AFF',
     alignItems: 'center',
   },
   secondary: {

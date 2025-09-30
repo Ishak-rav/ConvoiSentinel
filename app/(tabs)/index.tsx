@@ -4,11 +4,13 @@ import { Obstacle, ObstaclesStore } from '@/services/obstacles';
 import { useFocusEffect } from '@react-navigation/native';
 import { Link } from 'expo-router';
 import React, { useCallback, useState } from 'react';
+import { useThemeColor } from '@/hooks/use-theme-color';
 import { Alert, FlatList, Linking, Pressable, StyleSheet, View } from 'react-native';
 
 export default function ObstaclesScreen() {
   const [data, setData] = useState<Obstacle[]>([]);
   const [loading, setLoading] = useState(false);
+  const tint = useThemeColor({}, 'tint');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -88,7 +90,7 @@ export default function ObstaclesScreen() {
         }
       />
       <Link href="/add-obstacle" asChild>
-        <Pressable style={styles.fab} accessibilityLabel="Ajouter un obstacle">
+        <Pressable style={[styles.fab, { backgroundColor: tint }]} accessibilityLabel="Ajouter un obstacle">
           <ThemedText type="title" style={{ color: 'white' }}>+</ThemedText>
         </Pressable>
       </Link>
@@ -144,7 +146,6 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#007AFF',
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
